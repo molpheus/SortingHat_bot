@@ -115,6 +115,11 @@ client.on(Events.MessageCreate, async message => {
                 return;
             }
 
+            if (keyColumnId < 0 || valueColumnId < 0) {
+                await message.reply('列IDは0以上の値を指定してください。');
+                return;
+            }
+
             const attachment = message.attachments.first();
             
             // Check if it's a CSV file
@@ -143,7 +148,7 @@ client.on(Events.MessageCreate, async message => {
                     const record = records[i];
                     
                     if (keyColumnId >= record.length || valueColumnId >= record.length) {
-                        console.error(`Row ${i}: Column index out of bounds`);
+                        console.error(`Row ${i}: Column index out of bounds. Requested keyColumn: ${keyColumnId}, valueColumn: ${valueColumnId}, but record has ${record.length} columns`);
                         errorCount++;
                         continue;
                     }
