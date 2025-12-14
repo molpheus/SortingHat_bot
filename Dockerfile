@@ -23,8 +23,9 @@ RUN chown -R nodejs:nodejs /app
 # Switch to non-root user
 USER nodejs
 
-# Expose port (will be configurable via environment variable)
-EXPOSE 3000
+# Expose port (configurable via build argument)
+ARG BOT_PORT=3000
+EXPOSE ${BOT_PORT}
 
 # Start the application
 CMD ["npm", "start"]

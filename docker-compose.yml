@@ -8,8 +8,8 @@ services:
     container_name: sortinghat-bot
     restart: unless-stopped
     ports:
-      # カスタムポート設定: ホストポート:コンテナポート
-      # デフォルトは3000番ポートですが、.envファイルで変更可能
+      # Custom port configuration: HostPort:ContainerPort
+      # Default is port 3000, but can be changed in .env file
       - "${BOT_PORT:-3000}:${BOT_PORT:-3000}"
     env_file:
       - .env
@@ -17,13 +17,13 @@ services:
       - NODE_ENV=production
       - BOT_PORT=${BOT_PORT:-3000}
     volumes:
-      # ログやデータを永続化する場合は以下をコメント解除
+      # Uncomment the following lines to persist logs and data
       # - ./data:/app/data
       # - ./logs:/app/logs
     networks:
       - sortinghat-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:${BOT_PORT:-3000}/health"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${BOT_PORT:-3000}/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
