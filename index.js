@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits, Events, PermissionFlagsBits, AttachmentBuilder } = require('discord.js');
 const { parse } = require('csv-parse/sync');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -220,3 +221,84 @@ client.on(Events.MessageCreate, async message => {
 
 // Login to Discord with your client's token
 client.login(process.env.DISCORD_TOKEN);
+
+// HTTP server for health checks and status monitoring
+const PORT = process.env.BOT_PORT || 3000;
+
+const server = http.createServer((req, res) => {
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+
+    // Health check endpoint
+    if (req.url === '/health') {
+        const isReady = client.isReady();
+        const statusCode = isReady ? 200 : 503;
+        
+        res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            status: isReady ? 'ok' : 'not ready',
+            uptime: process.uptime(),
+            timestamp: new Date().toISOString()
+        }));
+        return;
+    }
+
+    // Status endpoint
+    if (req.url === '/status') {
+        const isReady = client.isReady();
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            bot: {
+                ready: isReady,
+                user: isReady ? client.user.tag : null,
+                guilds: isReady ? client.guilds.cache.size : 0
+            },
+            servers: {
+                configured: serverData.size,
+                details: Array.from(serverData.entries()).map(([guildId, data]) => ({
+                    guildId,
+                    hasCSV: data.csvData !== null,
+                    csvEntries: data.csvData ? data.csvData.size : 0,
+                    channelSet: data.channelId !== null
+                }))
+            },
+            uptime: process.uptime(),
+            timestamp: new Date().toISOString()
+        }));
+        return;
+    }
+
+    // Root endpoint
+    if (req.url === '/') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            name: 'SortingHat Bot',
+            version: '1.0.0',
+            status: client.isReady() ? 'running' : 'starting',
+            endpoints: {
+                health: '/health',
+                status: '/status'
+            }
+        }));
+        return;
+    }
+
+    // 404 for other routes
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not Found' }));
+});
+
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`HTTP server listening on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Status: http://localhost:${PORT}/status`);
+});

@@ -11,9 +11,18 @@ Discord BOTとして動作するNodeJSのコード
 
 ## 必要要件
 
-- Node.js 18.0.0 以上
+- Node.js 18.0.0 以上（通常インストール時）
+- Docker と Docker Compose（コンテナ実行時）
 
 ## セットアップ
+
+### デプロイ方法の選択
+
+このBOTは以下の2つの方法でデプロイできます：
+- **方法A**: Docker Compose を使用（推奨）
+- **方法B**: Node.js を直接使用
+
+## セットアップ（Docker Compose使用）
 
 ### 1. Discord Bot の作成
 
@@ -39,7 +48,54 @@ Discord BOTとして動作するNodeJSのコード
    - `Manage Messages`
 4. 生成されたURLをブラウザで開き、サーバーにBOTを招待
 
-### 3. プロジェクトのセットアップ
+### 3. Docker Compose でのセットアップ
+
+```bash
+# 環境変数の設定
+cp .env.example .env
+
+# .env ファイルを編集
+# - DISCORD_TOKEN: BOTのトークンを設定
+# - BOT_PORT: HTTPサーバーのポート番号（デフォルト: 3000）
+#   カスタムポートを使用する場合は変更してください
+#   例: BOT_PORT=8080
+
+# Dockerイメージのビルドとコンテナの起動
+docker-compose up -d
+
+# ログの確認
+docker-compose logs -f
+
+# コンテナの停止
+docker-compose down
+```
+
+### ヘルスチェック・ステータス確認
+
+BOTはHTTPサーバーを起動し、以下のエンドポイントを提供します：
+
+- `http://localhost:{BOT_PORT}/health` - ヘルスチェック
+- `http://localhost:{BOT_PORT}/status` - BOTの詳細なステータス
+- `http://localhost:{BOT_PORT}/` - BOT情報
+
+例（デフォルトポート3000の場合）：
+```bash
+curl http://localhost:3000/health
+curl http://localhost:3000/status
+```
+
+カスタムポートを使用する場合の例（ポート8080）：
+```bash
+# .envファイルに設定
+BOT_PORT=8080
+
+# アクセス
+curl http://localhost:8080/health
+```
+
+## セットアップ（Node.js直接実行）
+
+### 1. プロジェクトのセットアップ
 
 ```bash
 # 依存関係のインストール
@@ -47,7 +103,7 @@ npm install
 
 # 環境変数の設定
 cp .env.example .env
-# .env ファイルを編集して DISCORD_TOKEN にBOTのトークンを設定
+# .env ファイルを編集して DISCORD_TOKEN と BOT_PORT を設定
 
 # BOTの起動
 npm start
