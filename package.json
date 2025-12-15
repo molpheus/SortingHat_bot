@@ -1,0 +1,26 @@
+{
+  "name": "sortinghat-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for role assignment based on CSV file mappings",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "roles",
+    "csv"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "csv-parse": "^5.5.3",
+    "dotenv": "^16.3.1"
+  }
+}
