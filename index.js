@@ -17,6 +17,7 @@ const client = new Client({
 
 // Storage for server-specific data
 // Structure: { guildId: { csvData: Map(value -> role), channelId: string, adminChannelId: string, keyColumn: string, valueColumn: string } }
+// Each guild's data is completely isolated and cannot be accessed by other guilds
 const serverData = new Map();
 
 // When the client is ready, run this code (only once)
@@ -467,13 +468,7 @@ const server = http.createServer((req, res) => {
                 guilds: isReady ? client.guilds.cache.size : 0
             },
             servers: {
-                configured: serverData.size,
-                details: Array.from(serverData.entries()).map(([guildId, data]) => ({
-                    guildId,
-                    hasCSV: data.csvData !== null,
-                    csvEntries: data.csvData ? data.csvData.size : 0,
-                    channelSet: data.channelId !== null
-                }))
+                configured: serverData.size
             },
             uptime: process.uptime(),
             timestamp: new Date().toISOString()
